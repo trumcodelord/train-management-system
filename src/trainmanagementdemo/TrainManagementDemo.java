@@ -14,6 +14,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import javafx.scene.image.Image;
 
 public class TrainManagementDemo extends Application {
 
@@ -35,6 +36,9 @@ public class TrainManagementDemo extends Application {
     @Override
     public void start(Stage stage) {
         this.primaryStage = stage;
+        primaryStage.getIcons().add(
+                new Image(getClass().getResourceAsStream("/trainmanagementdemo/assets/train_icon.png"))
+        );
         taoDuLieuMau();
 
         primaryStage.setTitle("Hệ thống quản lý đường sắt thông minh");
@@ -882,8 +886,8 @@ public class TrainManagementDemo extends Application {
         danhSachThuChi.add(new PhieuThuChi(maPhieu, "Thu", "Bán vé", veDangChon.getGia(), "15/05/2025", "NV001",
                 "Thu tiền vé " + veDangChon.getMaVe() + " - " + tenKhach));
 
-        String hoaDon =
-                "ĐẶT VÉ THÀNH CÔNG\n"
+        String hoaDon
+                = "ĐẶT VÉ THÀNH CÔNG\n"
                 + "----------------------------------\n"
                 + "Mã vé: " + veDangChon.getMaVe() + "\n"
                 + "Mã phiếu thu: " + maPhieu + "\n"
@@ -904,6 +908,7 @@ public class TrainManagementDemo extends Application {
     }
 
     public static class VeTau {
+
         private final SimpleStringProperty maVe;
         private final SimpleStringProperty gaDi;
         private final SimpleStringProperty gaDen;
@@ -919,16 +924,38 @@ public class TrainManagementDemo extends Application {
             this.gia = new SimpleDoubleProperty(gia);
             this.trangThai = new SimpleStringProperty(trangThai);
         }
-        public String getMaVe() { return maVe.get(); }
-        public String getGaDi() { return gaDi.get(); }
-        public String getGaDen() { return gaDen.get(); }
-        public String getGioDi() { return gioDi.get(); }
-        public double getGia() { return gia.get(); }
-        public String getTrangThai() { return trangThai.get(); }
-        public void setTrangThai(String trangThai) { this.trangThai.set(trangThai); }
+
+        public String getMaVe() {
+            return maVe.get();
+        }
+
+        public String getGaDi() {
+            return gaDi.get();
+        }
+
+        public String getGaDen() {
+            return gaDen.get();
+        }
+
+        public String getGioDi() {
+            return gioDi.get();
+        }
+
+        public double getGia() {
+            return gia.get();
+        }
+
+        public String getTrangThai() {
+            return trangThai.get();
+        }
+
+        public void setTrangThai(String trangThai) {
+            this.trangThai.set(trangThai);
+        }
     }
 
     public static class Tau {
+
         private final SimpleStringProperty maTau;
         private final SimpleStringProperty tenTau;
         private final SimpleStringProperty loaiTau;
@@ -942,15 +969,34 @@ public class TrainManagementDemo extends Application {
             this.soToa = new SimpleStringProperty(soToa);
             this.trangThai = new SimpleStringProperty(trangThai);
         }
-        public String getMaTau() { return maTau.get(); }
-        public String getTenTau() { return tenTau.get(); }
-        public String getLoaiTau() { return loaiTau.get(); }
-        public String getSoToa() { return soToa.get(); }
-        public String getTrangThai() { return trangThai.get(); }
-        public void setTrangThai(String trangThai) { this.trangThai.set(trangThai); }
+
+        public String getMaTau() {
+            return maTau.get();
+        }
+
+        public String getTenTau() {
+            return tenTau.get();
+        }
+
+        public String getLoaiTau() {
+            return loaiTau.get();
+        }
+
+        public String getSoToa() {
+            return soToa.get();
+        }
+
+        public String getTrangThai() {
+            return trangThai.get();
+        }
+
+        public void setTrangThai(String trangThai) {
+            this.trangThai.set(trangThai);
+        }
     }
 
     public static class LichTrinh {
+
         private final SimpleStringProperty maLichTrinh;
         private final SimpleStringProperty maTau;
         private final SimpleStringProperty gaDi;
@@ -969,17 +1015,42 @@ public class TrainManagementDemo extends Application {
             this.gioDen = new SimpleStringProperty(gioDen);
             this.trangThai = new SimpleStringProperty(trangThai);
         }
-        public String getMaLichTrinh() { return maLichTrinh.get(); }
-        public String getMaTau() { return maTau.get(); }
-        public String getGaDi() { return gaDi.get(); }
-        public String getGaDen() { return gaDen.get(); }
-        public String getGioDi() { return gioDi.get(); }
-        public String getGioDen() { return gioDen.get(); }
-        public String getTrangThai() { return trangThai.get(); }
-        public void setTrangThai(String trangThai) { this.trangThai.set(trangThai); }
+
+        public String getMaLichTrinh() {
+            return maLichTrinh.get();
+        }
+
+        public String getMaTau() {
+            return maTau.get();
+        }
+
+        public String getGaDi() {
+            return gaDi.get();
+        }
+
+        public String getGaDen() {
+            return gaDen.get();
+        }
+
+        public String getGioDi() {
+            return gioDi.get();
+        }
+
+        public String getGioDen() {
+            return gioDen.get();
+        }
+
+        public String getTrangThai() {
+            return trangThai.get();
+        }
+
+        public void setTrangThai(String trangThai) {
+            this.trangThai.set(trangThai);
+        }
     }
 
     public static class NhanVien {
+
         private final SimpleStringProperty maNV;
         private final SimpleStringProperty hoTen;
         private final SimpleStringProperty cccd;
@@ -997,17 +1068,42 @@ public class TrainManagementDemo extends Application {
             this.caLam = new SimpleStringProperty(caLam);
             this.trangThai = new SimpleStringProperty(trangThai);
         }
-        public String getMaNV() { return maNV.get(); }
-        public String getHoTen() { return hoTen.get(); }
-        public String getCCCD() { return cccd.get(); }
-        public String getSdt() { return sdt.get(); }
-        public String getBoPhan() { return boPhan.get(); }
-        public String getCaLam() { return caLam.get(); }
-        public String getTrangThai() { return trangThai.get(); }
-        public void setTrangThai(String trangThai) { this.trangThai.set(trangThai); }
+
+        public String getMaNV() {
+            return maNV.get();
+        }
+
+        public String getHoTen() {
+            return hoTen.get();
+        }
+
+        public String getCCCD() {
+            return cccd.get();
+        }
+
+        public String getSdt() {
+            return sdt.get();
+        }
+
+        public String getBoPhan() {
+            return boPhan.get();
+        }
+
+        public String getCaLam() {
+            return caLam.get();
+        }
+
+        public String getTrangThai() {
+            return trangThai.get();
+        }
+
+        public void setTrangThai(String trangThai) {
+            this.trangThai.set(trangThai);
+        }
     }
 
     public static class PhieuThuChi {
+
         private final SimpleStringProperty maPhieu;
         private final SimpleStringProperty loai;
         private final SimpleStringProperty hangMuc;
@@ -1025,12 +1121,33 @@ public class TrainManagementDemo extends Application {
             this.nguoiLap = new SimpleStringProperty(nguoiLap);
             this.ghiChu = new SimpleStringProperty(ghiChu);
         }
-        public String getMaPhieu() { return maPhieu.get(); }
-        public String getLoai() { return loai.get(); }
-        public String getHangMuc() { return hangMuc.get(); }
-        public double getSoTien() { return soTien.get(); }
-        public String getNgayLap() { return ngayLap.get(); }
-        public String getNguoiLap() { return nguoiLap.get(); }
-        public String getGhiChu() { return ghiChu.get(); }
+
+        public String getMaPhieu() {
+            return maPhieu.get();
+        }
+
+        public String getLoai() {
+            return loai.get();
+        }
+
+        public String getHangMuc() {
+            return hangMuc.get();
+        }
+
+        public double getSoTien() {
+            return soTien.get();
+        }
+
+        public String getNgayLap() {
+            return ngayLap.get();
+        }
+
+        public String getNguoiLap() {
+            return nguoiLap.get();
+        }
+
+        public String getGhiChu() {
+            return ghiChu.get();
+        }
     }
 }
