@@ -26,19 +26,18 @@ public class TrainManagementDemo extends Application {
     private TextField txtCCCD;
     private TextArea txtHoaDon;
 
-    private ObservableList<VeTau> danhSachVe = FXCollections.observableArrayList();
-    private ObservableList<Tau> danhSachTau = FXCollections.observableArrayList();
-    private ObservableList<LichTrinh> danhSachLichTrinh = FXCollections.observableArrayList();
+    private final ObservableList<VeTau> danhSachVe = FXCollections.observableArrayList();
+    private final ObservableList<Tau> danhSachTau = FXCollections.observableArrayList();
+    private final ObservableList<LichTrinh> danhSachLichTrinh = FXCollections.observableArrayList();
+    private final ObservableList<NhanVien> danhSachNhanVien = FXCollections.observableArrayList();
 
     @Override
     public void start(Stage stage) {
         this.primaryStage = stage;
         taoDuLieuMau();
 
-        Scene welcomeScene = taoManHinhChao();
-
         primaryStage.setTitle("Hệ thống quản lý đường sắt thông minh");
-        primaryStage.setScene(welcomeScene);
+        primaryStage.setScene(taoManHinhChao());
         primaryStage.setWidth(1000);
         primaryStage.setHeight(650);
         primaryStage.show();
@@ -63,31 +62,26 @@ public class TrainManagementDemo extends Application {
         root.setPadding(new Insets(30));
         root.setStyle("-fx-background-color: linear-gradient(to bottom, #EAF6FF, #FFFFFF);");
         root.getChildren().addAll(lblTitle, lblHello, lblSub, btnStart);
-
         return new Scene(root);
     }
 
     private Scene taoManHinhChinh() {
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color: #F4F8FB;");
-
         root.setTop(taoHeader());
         root.setLeft(taoMenuTrai());
         root.setCenter(taoNoiDungBanVe());
-
         return new Scene(root);
     }
 
     private HBox taoHeader() {
         Label lblTitle = new Label("TrainManagement - Demo 5 phân hệ lõi");
         lblTitle.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;");
-
         HBox header = new HBox(15);
         header.setAlignment(Pos.CENTER_LEFT);
         header.setPadding(new Insets(12, 20, 12, 20));
         header.setStyle("-fx-background-color: #0B3D91;");
         header.getChildren().add(lblTitle);
-
         return header;
     }
 
@@ -109,11 +103,10 @@ public class TrainManagementDemo extends Application {
         btnBanVe.setOnAction(e -> doiNoiDung(taoNoiDungBanVe()));
         btnTau.setOnAction(e -> doiNoiDung(taoNoiDungQuanLyTau()));
         btnLichTrinh.setOnAction(e -> doiNoiDung(taoNoiDungQuanLyLichTrinh()));
-        btnNhanVien.setOnAction(e -> thongBaoChucNangDangMoPhong("Quản lý nhân viên"));
+        btnNhanVien.setOnAction(e -> doiNoiDung(taoNoiDungQuanLyNhanVien()));
         btnThuChi.setOnAction(e -> thongBaoChucNangDangMoPhong("Thống kê thu chi"));
 
         menu.getChildren().addAll(lblMenu, btnBanVe, btnTau, btnLichTrinh, btnNhanVien, btnThuChi);
-
         return menu;
     }
 
@@ -129,28 +122,47 @@ public class TrainManagementDemo extends Application {
         return btn;
     }
 
+    private Label taoTieuDe(String text) {
+        Label lbl = new Label(text);
+        lbl.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #0B3D91;");
+        return lbl;
+    }
+
+    private GridPane taoKhungNhap() {
+        GridPane pane = new GridPane();
+        pane.setHgap(10);
+        pane.setVgap(10);
+        pane.setPadding(new Insets(15));
+        pane.setStyle("-fx-background-color: white; -fx-border-color: #D0D7DE;");
+        return pane;
+    }
+
+    private <S, T> TableColumn<S, T> taoCot(String title, String property, int width) {
+        TableColumn<S, T> col = new TableColumn<>(title);
+        col.setCellValueFactory(new PropertyValueFactory<>(property));
+        col.setPrefWidth(width);
+        return col;
+    }
+
+    private TextArea taoVungThongBao(String text) {
+        TextArea area = new TextArea(text);
+        area.setEditable(false);
+        area.setPrefHeight(90);
+        return area;
+    }
+
     private VBox taoNoiDungBanVe() {
         VBox content = new VBox(15);
         content.setPadding(new Insets(20));
 
-        Label lblTitle = new Label("QUẢN LÝ BÁN VÉ");
-        lblTitle.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #0B3D91;");
-
-        GridPane searchPane = new GridPane();
-        searchPane.setHgap(10);
-        searchPane.setVgap(10);
-        searchPane.setPadding(new Insets(15));
-        searchPane.setStyle("-fx-background-color: white; -fx-border-color: #D0D7DE;");
-
+        GridPane searchPane = taoKhungNhap();
         txtGaDi = new TextField();
         txtGaDi.setPromptText("Ví dụ: Hà Nội");
-
         txtGaDen = new TextField();
         txtGaDen.setPromptText("Ví dụ: Đà Nẵng");
 
         Button btnTimVe = new Button("Tìm vé");
         btnTimVe.setOnAction(e -> timVe());
-
         Button btnLamMoi = new Button("Làm mới");
         btnLamMoi.setOnAction(e -> {
             txtGaDi.clear();
@@ -168,15 +180,9 @@ public class TrainManagementDemo extends Application {
 
         tableVe = taoBangVe();
 
-        GridPane customerPane = new GridPane();
-        customerPane.setHgap(10);
-        customerPane.setVgap(10);
-        customerPane.setPadding(new Insets(15));
-        customerPane.setStyle("-fx-background-color: white; -fx-border-color: #D0D7DE;");
-
+        GridPane customerPane = taoKhungNhap();
         txtTenKhach = new TextField();
         txtTenKhach.setPromptText("Nhập họ tên khách hàng");
-
         txtCCCD = new TextField();
         txtCCCD.setPromptText("Nhập CCCD hoặc SĐT");
 
@@ -195,8 +201,7 @@ public class TrainManagementDemo extends Application {
         txtHoaDon.setPrefHeight(150);
         txtHoaDon.setEditable(false);
 
-        content.getChildren().addAll(lblTitle, searchPane, tableVe, customerPane, txtHoaDon);
-
+        content.getChildren().addAll(taoTieuDe("QUẢN LÝ BÁN VÉ"), searchPane, tableVe, customerPane, txtHoaDon);
         return content;
     }
 
@@ -204,33 +209,13 @@ public class TrainManagementDemo extends Application {
         TableView<VeTau> table = new TableView<>();
         table.setItems(danhSachVe);
         table.setPrefHeight(260);
-
-        TableColumn<VeTau, String> colMaVe = new TableColumn<>("Mã vé");
-        colMaVe.setCellValueFactory(new PropertyValueFactory<>("maVe"));
-        colMaVe.setPrefWidth(100);
-
-        TableColumn<VeTau, String> colGaDi = new TableColumn<>("Ga đi");
-        colGaDi.setCellValueFactory(new PropertyValueFactory<>("gaDi"));
-        colGaDi.setPrefWidth(130);
-
-        TableColumn<VeTau, String> colGaDen = new TableColumn<>("Ga đến");
-        colGaDen.setCellValueFactory(new PropertyValueFactory<>("gaDen"));
-        colGaDen.setPrefWidth(130);
-
-        TableColumn<VeTau, String> colGioDi = new TableColumn<>("Giờ đi");
-        colGioDi.setCellValueFactory(new PropertyValueFactory<>("gioDi"));
-        colGioDi.setPrefWidth(100);
-
-        TableColumn<VeTau, Double> colGia = new TableColumn<>("Giá vé");
-        colGia.setCellValueFactory(new PropertyValueFactory<>("gia"));
-        colGia.setPrefWidth(120);
-
-        TableColumn<VeTau, String> colTrangThai = new TableColumn<>("Trạng thái");
-        colTrangThai.setCellValueFactory(new PropertyValueFactory<>("trangThai"));
-        colTrangThai.setPrefWidth(120);
-
-        table.getColumns().addAll(colMaVe, colGaDi, colGaDen, colGioDi, colGia, colTrangThai);
-
+        table.getColumns().addAll(
+                taoCot("Mã vé", "maVe", 100),
+                taoCot("Ga đi", "gaDi", 130),
+                taoCot("Ga đến", "gaDen", 130),
+                taoCot("Giờ đi", "gioDi", 100),
+                taoCot("Giá vé", "gia", 120),
+                taoCot("Trạng thái", "trangThai", 120));
         return table;
     }
 
@@ -238,68 +223,34 @@ public class TrainManagementDemo extends Application {
         VBox content = new VBox(15);
         content.setPadding(new Insets(20));
 
-        Label lblTitle = new Label("QUẢN LÝ TÀU");
-        lblTitle.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #0B3D91;");
-
         Label lblMoTa = new Label("Demo nghiệp vụ: xem danh sách tàu, thêm tàu mới, tìm kiếm và cập nhật trạng thái khai thác.");
         lblMoTa.setStyle("-fx-font-size: 13px; -fx-text-fill: #555555;");
 
         TableView<Tau> tableTau = new TableView<>();
         tableTau.setItems(danhSachTau);
         tableTau.setPrefHeight(260);
+        tableTau.getColumns().addAll(
+                taoCot("Mã tàu", "maTau", 100),
+                taoCot("Tên tàu", "tenTau", 160),
+                taoCot("Loại tàu", "loaiTau", 140),
+                taoCot("Số toa", "soToa", 90),
+                taoCot("Trạng thái", "trangThai", 160));
 
-        TableColumn<Tau, String> colMaTau = new TableColumn<>("Mã tàu");
-        colMaTau.setCellValueFactory(new PropertyValueFactory<>("maTau"));
-        colMaTau.setPrefWidth(100);
-
-        TableColumn<Tau, String> colTenTau = new TableColumn<>("Tên tàu");
-        colTenTau.setCellValueFactory(new PropertyValueFactory<>("tenTau"));
-        colTenTau.setPrefWidth(160);
-
-        TableColumn<Tau, String> colLoaiTau = new TableColumn<>("Loại tàu");
-        colLoaiTau.setCellValueFactory(new PropertyValueFactory<>("loaiTau"));
-        colLoaiTau.setPrefWidth(140);
-
-        TableColumn<Tau, String> colSoToa = new TableColumn<>("Số toa");
-        colSoToa.setCellValueFactory(new PropertyValueFactory<>("soToa"));
-        colSoToa.setPrefWidth(90);
-
-        TableColumn<Tau, String> colTrangThai = new TableColumn<>("Trạng thái");
-        colTrangThai.setCellValueFactory(new PropertyValueFactory<>("trangThai"));
-        colTrangThai.setPrefWidth(160);
-
-        tableTau.getColumns().addAll(colMaTau, colTenTau, colLoaiTau, colSoToa, colTrangThai);
-
-        GridPane formPane = new GridPane();
-        formPane.setHgap(10);
-        formPane.setVgap(10);
-        formPane.setPadding(new Insets(15));
-        formPane.setStyle("-fx-background-color: white; -fx-border-color: #D0D7DE;");
-
+        GridPane formPane = taoKhungNhap();
         TextField txtMaTau = new TextField();
         txtMaTau.setPromptText("VD: TAU04");
-
         TextField txtTenTau = new TextField();
         txtTenTau.setPromptText("VD: SE4");
-
         TextField txtLoaiTau = new TextField();
         txtLoaiTau.setPromptText("VD: Tàu khách");
-
         TextField txtSoToa = new TextField();
         txtSoToa.setPromptText("VD: 12");
-
-        ComboBox<String> cbTrangThai = new ComboBox<>(FXCollections.observableArrayList(
-                "Đang hoạt động", "Bảo trì", "Ngừng khai thác"));
+        ComboBox<String> cbTrangThai = new ComboBox<>(FXCollections.observableArrayList("Đang hoạt động", "Bảo trì", "Ngừng khai thác"));
         cbTrangThai.setValue("Đang hoạt động");
         cbTrangThai.setMaxWidth(Double.MAX_VALUE);
-
         TextField txtTimKiem = new TextField();
         txtTimKiem.setPromptText("Tìm theo mã, tên, loại, trạng thái...");
-
-        TextArea txtThongBao = new TextArea();
-        txtThongBao.setEditable(false);
-        txtThongBao.setPrefHeight(90);
-        txtThongBao.setText("Sẵn sàng quản lý danh sách tàu.");
+        TextArea txtThongBao = taoVungThongBao("Sẵn sàng quản lý danh sách tàu.");
 
         Button btnThem = new Button("Thêm tàu");
         btnThem.setStyle("-fx-background-color: #008C45; -fx-text-fill: white; -fx-font-weight: bold;");
@@ -314,19 +265,15 @@ public class TrainManagementDemo extends Application {
                 txtThongBao.setText("Vui lòng nhập đầy đủ mã tàu, tên tàu, loại tàu và số toa.");
                 return;
             }
-
             for (Tau tau : danhSachTau) {
                 if (tau.getMaTau().equalsIgnoreCase(maTau)) {
                     txtThongBao.setText("Mã tàu đã tồn tại. Vui lòng nhập mã khác.");
                     return;
                 }
             }
-
-            Tau tauMoi = new Tau(maTau, tenTau, loaiTau, soToa, trangThai);
-            danhSachTau.add(tauMoi);
+            danhSachTau.add(new Tau(maTau, tenTau, loaiTau, soToa, trangThai));
             tableTau.setItems(danhSachTau);
             txtThongBao.setText("Đã thêm tàu mới: " + maTau + " - " + tenTau + ".");
-
             txtMaTau.clear();
             txtTenTau.clear();
             txtLoaiTau.clear();
@@ -342,29 +289,23 @@ public class TrainManagementDemo extends Application {
                 return;
             }
             tauDangChon.setTrangThai(cbTrangThai.getValue());
-            ObservableList<Tau> hienTai = tableTau.getItems();
-            tableTau.setItems(null);
-            tableTau.setItems(hienTai);
-            txtThongBao.setText("Đã cập nhật trạng thái tàu " + tauDangChon.getMaTau()
-                    + " thành: " + tauDangChon.getTrangThai() + ".");
+            lamMoiBang(tableTau, tableTau.getItems());
+            txtThongBao.setText("Đã cập nhật trạng thái tàu " + tauDangChon.getMaTau() + " thành: " + tauDangChon.getTrangThai() + ".");
         });
 
         Button btnTimKiem = new Button("Tìm kiếm");
         btnTimKiem.setOnAction(e -> {
             String tuKhoa = txtTimKiem.getText().trim().toLowerCase();
             ObservableList<Tau> ketQua = FXCollections.observableArrayList();
-
             for (Tau tau : danhSachTau) {
-                boolean phuHop = tuKhoa.isEmpty()
+                if (tuKhoa.isEmpty()
                         || tau.getMaTau().toLowerCase().contains(tuKhoa)
                         || tau.getTenTau().toLowerCase().contains(tuKhoa)
                         || tau.getLoaiTau().toLowerCase().contains(tuKhoa)
-                        || tau.getTrangThai().toLowerCase().contains(tuKhoa);
-                if (phuHop) {
+                        || tau.getTrangThai().toLowerCase().contains(tuKhoa)) {
                     ketQua.add(tau);
                 }
             }
-
             tableTau.setItems(ketQua);
             txtThongBao.setText("Đã tìm thấy " + ketQua.size() + " tàu phù hợp.");
         });
@@ -393,7 +334,7 @@ public class TrainManagementDemo extends Application {
         formPane.add(btnTimKiem, 3, 3);
         formPane.add(btnLamMoi, 4, 3);
 
-        content.getChildren().addAll(lblTitle, lblMoTa, tableTau, formPane, txtThongBao);
+        content.getChildren().addAll(taoTieuDe("QUẢN LÝ TÀU"), lblMoTa, tableTau, formPane, txtThongBao);
         return content;
     }
 
@@ -401,55 +342,24 @@ public class TrainManagementDemo extends Application {
         VBox content = new VBox(15);
         content.setPadding(new Insets(20));
 
-        Label lblTitle = new Label("QUẢN LÝ LỊCH TRÌNH");
-        lblTitle.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #0B3D91;");
-
         Label lblMoTa = new Label("Demo nghiệp vụ: tra cứu lịch trình, thêm lịch trình mới và cập nhật trạng thái chạy tàu.");
         lblMoTa.setStyle("-fx-font-size: 13px; -fx-text-fill: #555555;");
 
         TableView<LichTrinh> tableLichTrinh = new TableView<>();
         tableLichTrinh.setItems(danhSachLichTrinh);
         tableLichTrinh.setPrefHeight(260);
+        tableLichTrinh.getColumns().addAll(
+                taoCot("Mã lịch trình", "maLichTrinh", 120),
+                taoCot("Mã tàu", "maTau", 90),
+                taoCot("Ga đi", "gaDi", 120),
+                taoCot("Ga đến", "gaDen", 120),
+                taoCot("Giờ đi", "gioDi", 90),
+                taoCot("Giờ đến", "gioDen", 90),
+                taoCot("Trạng thái", "trangThai", 140));
 
-        TableColumn<LichTrinh, String> colMaLT = new TableColumn<>("Mã lịch trình");
-        colMaLT.setCellValueFactory(new PropertyValueFactory<>("maLichTrinh"));
-        colMaLT.setPrefWidth(120);
-
-        TableColumn<LichTrinh, String> colMaTau = new TableColumn<>("Mã tàu");
-        colMaTau.setCellValueFactory(new PropertyValueFactory<>("maTau"));
-        colMaTau.setPrefWidth(90);
-
-        TableColumn<LichTrinh, String> colGaDi = new TableColumn<>("Ga đi");
-        colGaDi.setCellValueFactory(new PropertyValueFactory<>("gaDi"));
-        colGaDi.setPrefWidth(120);
-
-        TableColumn<LichTrinh, String> colGaDen = new TableColumn<>("Ga đến");
-        colGaDen.setCellValueFactory(new PropertyValueFactory<>("gaDen"));
-        colGaDen.setPrefWidth(120);
-
-        TableColumn<LichTrinh, String> colGioDi = new TableColumn<>("Giờ đi");
-        colGioDi.setCellValueFactory(new PropertyValueFactory<>("gioDi"));
-        colGioDi.setPrefWidth(90);
-
-        TableColumn<LichTrinh, String> colGioDen = new TableColumn<>("Giờ đến");
-        colGioDen.setCellValueFactory(new PropertyValueFactory<>("gioDen"));
-        colGioDen.setPrefWidth(90);
-
-        TableColumn<LichTrinh, String> colTrangThai = new TableColumn<>("Trạng thái");
-        colTrangThai.setCellValueFactory(new PropertyValueFactory<>("trangThai"));
-        colTrangThai.setPrefWidth(140);
-
-        tableLichTrinh.getColumns().addAll(colMaLT, colMaTau, colGaDi, colGaDen, colGioDi, colGioDen, colTrangThai);
-
-        GridPane formPane = new GridPane();
-        formPane.setHgap(10);
-        formPane.setVgap(10);
-        formPane.setPadding(new Insets(15));
-        formPane.setStyle("-fx-background-color: white; -fx-border-color: #D0D7DE;");
-
+        GridPane formPane = taoKhungNhap();
         TextField txtMaLT = new TextField();
         txtMaLT.setPromptText("VD: LT004");
-
         ComboBox<String> cbMaTau = new ComboBox<>();
         for (Tau tau : danhSachTau) {
             cbMaTau.getItems().add(tau.getMaTau());
@@ -458,31 +368,20 @@ public class TrainManagementDemo extends Application {
             cbMaTau.setValue(cbMaTau.getItems().get(0));
         }
         cbMaTau.setMaxWidth(Double.MAX_VALUE);
-
         TextField txtGaDiForm = new TextField();
         txtGaDiForm.setPromptText("VD: Hà Nội");
-
         TextField txtGaDenForm = new TextField();
         txtGaDenForm.setPromptText("VD: Đà Nẵng");
-
         TextField txtGioDi = new TextField();
         txtGioDi.setPromptText("VD: 07:00");
-
         TextField txtGioDen = new TextField();
         txtGioDen.setPromptText("VD: 17:30");
-
-        ComboBox<String> cbTrangThai = new ComboBox<>(FXCollections.observableArrayList(
-                "Đang mở bán", "Đã khóa", "Tạm hoãn", "Hoàn thành"));
+        ComboBox<String> cbTrangThai = new ComboBox<>(FXCollections.observableArrayList("Đang mở bán", "Đã khóa", "Tạm hoãn", "Hoàn thành"));
         cbTrangThai.setValue("Đang mở bán");
         cbTrangThai.setMaxWidth(Double.MAX_VALUE);
-
         TextField txtTimKiem = new TextField();
         txtTimKiem.setPromptText("Tìm theo ga, mã tàu, trạng thái...");
-
-        TextArea txtThongBao = new TextArea();
-        txtThongBao.setEditable(false);
-        txtThongBao.setPrefHeight(90);
-        txtThongBao.setText("Sẵn sàng quản lý lịch trình tàu chạy.");
+        TextArea txtThongBao = taoVungThongBao("Sẵn sàng quản lý lịch trình tàu chạy.");
 
         Button btnThem = new Button("Thêm lịch trình");
         btnThem.setStyle("-fx-background-color: #008C45; -fx-text-fill: white; -fx-font-weight: bold;");
@@ -499,12 +398,10 @@ public class TrainManagementDemo extends Application {
                 txtThongBao.setText("Vui lòng nhập đầy đủ mã lịch trình, mã tàu, ga đi, ga đến, giờ đi và giờ đến.");
                 return;
             }
-
             if (gaDi.equalsIgnoreCase(gaDen)) {
                 txtThongBao.setText("Ga đi và ga đến không được trùng nhau.");
                 return;
             }
-
             for (LichTrinh lt : danhSachLichTrinh) {
                 if (lt.getMaLichTrinh().equalsIgnoreCase(maLT)) {
                     txtThongBao.setText("Mã lịch trình đã tồn tại. Vui lòng nhập mã khác.");
@@ -515,12 +412,9 @@ public class TrainManagementDemo extends Application {
                     return;
                 }
             }
-
-            LichTrinh lichTrinhMoi = new LichTrinh(maLT, maTau, gaDi, gaDen, gioDi, gioDen, trangThai);
-            danhSachLichTrinh.add(lichTrinhMoi);
+            danhSachLichTrinh.add(new LichTrinh(maLT, maTau, gaDi, gaDen, gioDi, gioDen, trangThai));
             tableLichTrinh.setItems(danhSachLichTrinh);
             txtThongBao.setText("Đã thêm lịch trình mới: " + maLT + " cho tàu " + maTau + ".");
-
             txtMaLT.clear();
             txtGaDiForm.clear();
             txtGaDenForm.clear();
@@ -537,30 +431,24 @@ public class TrainManagementDemo extends Application {
                 return;
             }
             ltDangChon.setTrangThai(cbTrangThai.getValue());
-            ObservableList<LichTrinh> hienTai = tableLichTrinh.getItems();
-            tableLichTrinh.setItems(null);
-            tableLichTrinh.setItems(hienTai);
-            txtThongBao.setText("Đã cập nhật trạng thái lịch trình " + ltDangChon.getMaLichTrinh()
-                    + " thành: " + ltDangChon.getTrangThai() + ".");
+            lamMoiBang(tableLichTrinh, tableLichTrinh.getItems());
+            txtThongBao.setText("Đã cập nhật trạng thái lịch trình " + ltDangChon.getMaLichTrinh() + " thành: " + ltDangChon.getTrangThai() + ".");
         });
 
         Button btnTimKiem = new Button("Tìm kiếm");
         btnTimKiem.setOnAction(e -> {
             String tuKhoa = txtTimKiem.getText().trim().toLowerCase();
             ObservableList<LichTrinh> ketQua = FXCollections.observableArrayList();
-
             for (LichTrinh lt : danhSachLichTrinh) {
-                boolean phuHop = tuKhoa.isEmpty()
+                if (tuKhoa.isEmpty()
                         || lt.getMaLichTrinh().toLowerCase().contains(tuKhoa)
                         || lt.getMaTau().toLowerCase().contains(tuKhoa)
                         || lt.getGaDi().toLowerCase().contains(tuKhoa)
                         || lt.getGaDen().toLowerCase().contains(tuKhoa)
-                        || lt.getTrangThai().toLowerCase().contains(tuKhoa);
-                if (phuHop) {
+                        || lt.getTrangThai().toLowerCase().contains(tuKhoa)) {
                     ketQua.add(lt);
                 }
             }
-
             tableLichTrinh.setItems(ketQua);
             txtThongBao.setText("Đã tìm thấy " + ketQua.size() + " lịch trình phù hợp.");
         });
@@ -593,8 +481,153 @@ public class TrainManagementDemo extends Application {
         formPane.add(btnTimKiem, 3, 4);
         formPane.add(btnLamMoi, 4, 4);
 
-        content.getChildren().addAll(lblTitle, lblMoTa, tableLichTrinh, formPane, txtThongBao);
+        content.getChildren().addAll(taoTieuDe("QUẢN LÝ LỊCH TRÌNH"), lblMoTa, tableLichTrinh, formPane, txtThongBao);
         return content;
+    }
+
+    private VBox taoNoiDungQuanLyNhanVien() {
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+
+        Label lblMoTa = new Label("Demo nghiệp vụ: xem danh sách nhân viên, thêm hồ sơ, tìm kiếm và khóa/ngừng hoạt động nhân viên.");
+        lblMoTa.setStyle("-fx-font-size: 13px; -fx-text-fill: #555555;");
+
+        TableView<NhanVien> tableNhanVien = new TableView<>();
+        tableNhanVien.setItems(danhSachNhanVien);
+        tableNhanVien.setPrefHeight(260);
+        tableNhanVien.getColumns().addAll(
+                taoCot("Mã NV", "maNV", 90),
+                taoCot("Họ tên", "hoTen", 160),
+                taoCot("CCCD", "cccd", 120),
+                taoCot("SĐT", "sdt", 120),
+                taoCot("Bộ phận", "boPhan", 130),
+                taoCot("Ca làm", "caLam", 90),
+                taoCot("Trạng thái", "trangThai", 130));
+
+        GridPane formPane = taoKhungNhap();
+        TextField txtMaNV = new TextField();
+        txtMaNV.setPromptText("VD: NV004");
+        TextField txtHoTen = new TextField();
+        txtHoTen.setPromptText("VD: Nguyễn Văn A");
+        TextField txtCCCDNV = new TextField();
+        txtCCCDNV.setPromptText("VD: 001203000111");
+        TextField txtSDT = new TextField();
+        txtSDT.setPromptText("VD: 0912345678");
+        ComboBox<String> cbBoPhan = new ComboBox<>(FXCollections.observableArrayList("Bán vé", "Điều hành", "Kế toán", "Kỹ thuật", "Dịch vụ"));
+        cbBoPhan.setValue("Bán vé");
+        cbBoPhan.setMaxWidth(Double.MAX_VALUE);
+        ComboBox<String> cbCaLam = new ComboBox<>(FXCollections.observableArrayList("Sáng", "Chiều", "Tối", "Hành chính"));
+        cbCaLam.setValue("Sáng");
+        cbCaLam.setMaxWidth(Double.MAX_VALUE);
+        ComboBox<String> cbTrangThai = new ComboBox<>(FXCollections.observableArrayList("Đang làm", "Tạm nghỉ", "Đã khóa"));
+        cbTrangThai.setValue("Đang làm");
+        cbTrangThai.setMaxWidth(Double.MAX_VALUE);
+        TextField txtTimKiem = new TextField();
+        txtTimKiem.setPromptText("Tìm theo mã, tên, bộ phận, trạng thái...");
+        TextArea txtThongBao = taoVungThongBao("Sẵn sàng quản lý hồ sơ nhân viên.");
+
+        Button btnThem = new Button("Thêm nhân viên");
+        btnThem.setStyle("-fx-background-color: #008C45; -fx-text-fill: white; -fx-font-weight: bold;");
+        btnThem.setOnAction(e -> {
+            String maNV = txtMaNV.getText().trim();
+            String hoTen = txtHoTen.getText().trim();
+            String cccd = txtCCCDNV.getText().trim();
+            String sdt = txtSDT.getText().trim();
+            String boPhan = cbBoPhan.getValue();
+            String caLam = cbCaLam.getValue();
+            String trangThai = cbTrangThai.getValue();
+
+            if (maNV.isEmpty() || hoTen.isEmpty() || cccd.isEmpty() || sdt.isEmpty()) {
+                txtThongBao.setText("Vui lòng nhập đầy đủ mã nhân viên, họ tên, CCCD và số điện thoại.");
+                return;
+            }
+            for (NhanVien nv : danhSachNhanVien) {
+                if (nv.getMaNV().equalsIgnoreCase(maNV)) {
+                    txtThongBao.setText("Mã nhân viên đã tồn tại. Vui lòng nhập mã khác.");
+                    return;
+                }
+                if (nv.getCCCD().equalsIgnoreCase(cccd)) {
+                    txtThongBao.setText("CCCD đã tồn tại trong hệ thống. Vui lòng kiểm tra lại.");
+                    return;
+                }
+            }
+            danhSachNhanVien.add(new NhanVien(maNV, hoTen, cccd, sdt, boPhan, caLam, trangThai));
+            tableNhanVien.setItems(danhSachNhanVien);
+            txtThongBao.setText("Đã thêm nhân viên mới: " + maNV + " - " + hoTen + ".");
+            txtMaNV.clear();
+            txtHoTen.clear();
+            txtCCCDNV.clear();
+            txtSDT.clear();
+            cbBoPhan.setValue("Bán vé");
+            cbCaLam.setValue("Sáng");
+            cbTrangThai.setValue("Đang làm");
+        });
+
+        Button btnCapNhat = new Button("Cập nhật trạng thái");
+        btnCapNhat.setOnAction(e -> {
+            NhanVien nvDangChon = tableNhanVien.getSelectionModel().getSelectedItem();
+            if (nvDangChon == null) {
+                txtThongBao.setText("Vui lòng chọn một nhân viên cần cập nhật trạng thái.");
+                return;
+            }
+            nvDangChon.setTrangThai(cbTrangThai.getValue());
+            lamMoiBang(tableNhanVien, tableNhanVien.getItems());
+            txtThongBao.setText("Đã cập nhật trạng thái nhân viên " + nvDangChon.getMaNV() + " thành: " + nvDangChon.getTrangThai() + ".");
+        });
+
+        Button btnTimKiem = new Button("Tìm kiếm");
+        btnTimKiem.setOnAction(e -> {
+            String tuKhoa = txtTimKiem.getText().trim().toLowerCase();
+            ObservableList<NhanVien> ketQua = FXCollections.observableArrayList();
+            for (NhanVien nv : danhSachNhanVien) {
+                if (tuKhoa.isEmpty()
+                        || nv.getMaNV().toLowerCase().contains(tuKhoa)
+                        || nv.getHoTen().toLowerCase().contains(tuKhoa)
+                        || nv.getBoPhan().toLowerCase().contains(tuKhoa)
+                        || nv.getCaLam().toLowerCase().contains(tuKhoa)
+                        || nv.getTrangThai().toLowerCase().contains(tuKhoa)) {
+                    ketQua.add(nv);
+                }
+            }
+            tableNhanVien.setItems(ketQua);
+            txtThongBao.setText("Đã tìm thấy " + ketQua.size() + " nhân viên phù hợp.");
+        });
+
+        Button btnLamMoi = new Button("Làm mới");
+        btnLamMoi.setOnAction(e -> {
+            txtTimKiem.clear();
+            tableNhanVien.setItems(danhSachNhanVien);
+            txtThongBao.setText("Đã hiển thị lại toàn bộ danh sách nhân viên.");
+        });
+
+        formPane.add(new Label("Mã NV:"), 0, 0);
+        formPane.add(txtMaNV, 1, 0);
+        formPane.add(new Label("Họ tên:"), 2, 0);
+        formPane.add(txtHoTen, 3, 0);
+        formPane.add(new Label("CCCD:"), 0, 1);
+        formPane.add(txtCCCDNV, 1, 1);
+        formPane.add(new Label("SĐT:"), 2, 1);
+        formPane.add(txtSDT, 3, 1);
+        formPane.add(new Label("Bộ phận:"), 0, 2);
+        formPane.add(cbBoPhan, 1, 2);
+        formPane.add(new Label("Ca làm:"), 2, 2);
+        formPane.add(cbCaLam, 3, 2);
+        formPane.add(new Label("Trạng thái:"), 0, 3);
+        formPane.add(cbTrangThai, 1, 3);
+        formPane.add(btnThem, 2, 3);
+        formPane.add(btnCapNhat, 3, 3);
+        formPane.add(new Label("Tìm kiếm:"), 0, 4);
+        formPane.add(txtTimKiem, 1, 4, 2, 1);
+        formPane.add(btnTimKiem, 3, 4);
+        formPane.add(btnLamMoi, 4, 4);
+
+        content.getChildren().addAll(taoTieuDe("QUẢN LÝ NHÂN VIÊN"), lblMoTa, tableNhanVien, formPane, txtThongBao);
+        return content;
+    }
+
+    private <T> void lamMoiBang(TableView<T> table, ObservableList<T> items) {
+        table.setItems(null);
+        table.setItems(items);
     }
 
     private void taoDuLieuMau() {
@@ -612,56 +645,46 @@ public class TrainManagementDemo extends Application {
         danhSachLichTrinh.add(new LichTrinh("LT001", "TAU01", "Hà Nội", "Đà Nẵng", "07:00", "17:30", "Đang mở bán"));
         danhSachLichTrinh.add(new LichTrinh("LT002", "TAU02", "Hà Nội", "Lào Cai", "08:30", "14:00", "Đang mở bán"));
         danhSachLichTrinh.add(new LichTrinh("LT003", "TAU03", "Đà Nẵng", "TP.HCM", "09:00", "23:00", "Tạm hoãn"));
+
+        danhSachNhanVien.add(new NhanVien("NV001", "Nguyễn Việt Long", "001203000001", "0901000001", "Bán vé", "Sáng", "Đang làm"));
+        danhSachNhanVien.add(new NhanVien("NV002", "Trần Nam Phong", "001203000002", "0901000002", "Điều hành", "Hành chính", "Đang làm"));
+        danhSachNhanVien.add(new NhanVien("NV003", "Nguyễn Tấn Dũng", "001203000003", "0901000003", "Kế toán", "Chiều", "Tạm nghỉ"));
     }
 
     private void timVe() {
         String gaDi = txtGaDi.getText().trim().toLowerCase();
         String gaDen = txtGaDen.getText().trim().toLowerCase();
-
         ObservableList<VeTau> ketQua = FXCollections.observableArrayList();
-
         for (VeTau ve : danhSachVe) {
             boolean dungGaDi = gaDi.isEmpty() || ve.getGaDi().toLowerCase().contains(gaDi);
             boolean dungGaDen = gaDen.isEmpty() || ve.getGaDen().toLowerCase().contains(gaDen);
-
             if (dungGaDi && dungGaDen) {
                 ketQua.add(ve);
             }
         }
-
         tableVe.setItems(ketQua);
         txtHoaDon.setText("Đã tìm thấy " + ketQua.size() + " vé phù hợp.");
     }
 
     private void datVe() {
         VeTau veDangChon = tableVe.getSelectionModel().getSelectedItem();
-
         if (veDangChon == null) {
             txtHoaDon.setText("Vui lòng chọn một vé cần đặt.");
             return;
         }
-
         if ("Đã đặt".equalsIgnoreCase(veDangChon.getTrangThai())) {
             txtHoaDon.setText("Vé này đã được đặt. Vui lòng chọn vé khác.");
             return;
         }
-
         String tenKhach = txtTenKhach.getText().trim();
         String cccd = txtCCCD.getText().trim();
-
         if (tenKhach.isEmpty() || cccd.isEmpty()) {
             txtHoaDon.setText("Vui lòng nhập đầy đủ tên khách hàng và CCCD/SĐT.");
             return;
         }
-
         veDangChon.setTrangThai("Đã đặt");
-
-        ObservableList<VeTau> hienTai = tableVe.getItems();
-        tableVe.setItems(null);
-        tableVe.setItems(hienTai);
-
+        lamMoiBang(tableVe, tableVe.getItems());
         DecimalFormat df = new DecimalFormat("#,###");
-
         String hoaDon =
                 "ĐẶT VÉ THÀNH CÔNG\n"
                 + "----------------------------------\n"
@@ -675,7 +698,6 @@ public class TrainManagementDemo extends Application {
                 + "Trạng thái vé: " + veDangChon.getTrangThai() + "\n"
                 + "----------------------------------\n"
                 + "Hệ thống đã lưu thông tin đặt vé và tạo hóa đơn.";
-
         txtHoaDon.setText(hoaDon);
     }
 
@@ -683,7 +705,7 @@ public class TrainManagementDemo extends Application {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Thông báo");
         alert.setHeaderText(tenChucNang);
-        alert.setContentText("Chức năng này đang được mô phỏng trong phạm vi demo. Nhóm tập trung demo luồng chính của phân hệ bán vé.");
+        alert.setContentText("Chức năng này đang được mô phỏng trong phạm vi demo. Nhóm tập trung demo các luồng chính trước, dữ liệu dùng trong bộ nhớ.");
         alert.showAndWait();
     }
 
@@ -707,34 +729,13 @@ public class TrainManagementDemo extends Application {
             this.gia = new SimpleDoubleProperty(gia);
             this.trangThai = new SimpleStringProperty(trangThai);
         }
-
-        public String getMaVe() {
-            return maVe.get();
-        }
-
-        public String getGaDi() {
-            return gaDi.get();
-        }
-
-        public String getGaDen() {
-            return gaDen.get();
-        }
-
-        public String getGioDi() {
-            return gioDi.get();
-        }
-
-        public double getGia() {
-            return gia.get();
-        }
-
-        public String getTrangThai() {
-            return trangThai.get();
-        }
-
-        public void setTrangThai(String trangThai) {
-            this.trangThai.set(trangThai);
-        }
+        public String getMaVe() { return maVe.get(); }
+        public String getGaDi() { return gaDi.get(); }
+        public String getGaDen() { return gaDen.get(); }
+        public String getGioDi() { return gioDi.get(); }
+        public double getGia() { return gia.get(); }
+        public String getTrangThai() { return trangThai.get(); }
+        public void setTrangThai(String trangThai) { this.trangThai.set(trangThai); }
     }
 
     public static class Tau {
@@ -751,30 +752,12 @@ public class TrainManagementDemo extends Application {
             this.soToa = new SimpleStringProperty(soToa);
             this.trangThai = new SimpleStringProperty(trangThai);
         }
-
-        public String getMaTau() {
-            return maTau.get();
-        }
-
-        public String getTenTau() {
-            return tenTau.get();
-        }
-
-        public String getLoaiTau() {
-            return loaiTau.get();
-        }
-
-        public String getSoToa() {
-            return soToa.get();
-        }
-
-        public String getTrangThai() {
-            return trangThai.get();
-        }
-
-        public void setTrangThai(String trangThai) {
-            this.trangThai.set(trangThai);
-        }
+        public String getMaTau() { return maTau.get(); }
+        public String getTenTau() { return tenTau.get(); }
+        public String getLoaiTau() { return loaiTau.get(); }
+        public String getSoToa() { return soToa.get(); }
+        public String getTrangThai() { return trangThai.get(); }
+        public void setTrangThai(String trangThai) { this.trangThai.set(trangThai); }
     }
 
     public static class LichTrinh {
@@ -796,37 +779,41 @@ public class TrainManagementDemo extends Application {
             this.gioDen = new SimpleStringProperty(gioDen);
             this.trangThai = new SimpleStringProperty(trangThai);
         }
+        public String getMaLichTrinh() { return maLichTrinh.get(); }
+        public String getMaTau() { return maTau.get(); }
+        public String getGaDi() { return gaDi.get(); }
+        public String getGaDen() { return gaDen.get(); }
+        public String getGioDi() { return gioDi.get(); }
+        public String getGioDen() { return gioDen.get(); }
+        public String getTrangThai() { return trangThai.get(); }
+        public void setTrangThai(String trangThai) { this.trangThai.set(trangThai); }
+    }
 
-        public String getMaLichTrinh() {
-            return maLichTrinh.get();
-        }
+    public static class NhanVien {
+        private final SimpleStringProperty maNV;
+        private final SimpleStringProperty hoTen;
+        private final SimpleStringProperty cccd;
+        private final SimpleStringProperty sdt;
+        private final SimpleStringProperty boPhan;
+        private final SimpleStringProperty caLam;
+        private final SimpleStringProperty trangThai;
 
-        public String getMaTau() {
-            return maTau.get();
+        public NhanVien(String maNV, String hoTen, String cccd, String sdt, String boPhan, String caLam, String trangThai) {
+            this.maNV = new SimpleStringProperty(maNV);
+            this.hoTen = new SimpleStringProperty(hoTen);
+            this.cccd = new SimpleStringProperty(cccd);
+            this.sdt = new SimpleStringProperty(sdt);
+            this.boPhan = new SimpleStringProperty(boPhan);
+            this.caLam = new SimpleStringProperty(caLam);
+            this.trangThai = new SimpleStringProperty(trangThai);
         }
-
-        public String getGaDi() {
-            return gaDi.get();
-        }
-
-        public String getGaDen() {
-            return gaDen.get();
-        }
-
-        public String getGioDi() {
-            return gioDi.get();
-        }
-
-        public String getGioDen() {
-            return gioDen.get();
-        }
-
-        public String getTrangThai() {
-            return trangThai.get();
-        }
-
-        public void setTrangThai(String trangThai) {
-            this.trangThai.set(trangThai);
-        }
+        public String getMaNV() { return maNV.get(); }
+        public String getHoTen() { return hoTen.get(); }
+        public String getCCCD() { return cccd.get(); }
+        public String getSdt() { return sdt.get(); }
+        public String getBoPhan() { return boPhan.get(); }
+        public String getCaLam() { return caLam.get(); }
+        public String getTrangThai() { return trangThai.get(); }
+        public void setTrangThai(String trangThai) { this.trangThai.set(trangThai); }
     }
 }
