@@ -8,6 +8,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -26,6 +27,7 @@ public class TrainManagementDemo extends Application {
     private TextArea txtHoaDon;
 
     private ObservableList<VeTau> danhSachVe = FXCollections.observableArrayList();
+    private ObservableList<Tau> danhSachTau = FXCollections.observableArrayList();
 
     @Override
     public void start(Stage stage) {
@@ -76,7 +78,7 @@ public class TrainManagementDemo extends Application {
     }
 
     private HBox taoHeader() {
-        Label lblTitle = new Label("TrainManagement - Quản lý bán vé");
+        Label lblTitle = new Label("TrainManagement - Demo 5 phân hệ lõi");
         lblTitle.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;");
 
         HBox header = new HBox(15);
@@ -103,12 +105,8 @@ public class TrainManagementDemo extends Application {
         Button btnNhanVien = taoNutMenu("Quản lý nhân viên");
         Button btnThuChi = taoNutMenu("Thống kê thu chi");
 
-        btnBanVe.setOnAction(e -> {
-            BorderPane root = (BorderPane) primaryStage.getScene().getRoot();
-            root.setCenter(taoNoiDungBanVe());
-        });
-
-        btnTau.setOnAction(e -> thongBaoChucNangDangMoPhong("Quản lý tàu"));
+        btnBanVe.setOnAction(e -> doiNoiDung(taoNoiDungBanVe()));
+        btnTau.setOnAction(e -> doiNoiDung(taoNoiDungQuanLyTau()));
         btnLichTrinh.setOnAction(e -> thongBaoChucNangDangMoPhong("Quản lý lịch trình"));
         btnNhanVien.setOnAction(e -> thongBaoChucNangDangMoPhong("Quản lý nhân viên"));
         btnThuChi.setOnAction(e -> thongBaoChucNangDangMoPhong("Thống kê thu chi"));
@@ -116,6 +114,11 @@ public class TrainManagementDemo extends Application {
         menu.getChildren().addAll(lblMenu, btnBanVe, btnTau, btnLichTrinh, btnNhanVien, btnThuChi);
 
         return menu;
+    }
+
+    private void doiNoiDung(Node node) {
+        BorderPane root = (BorderPane) primaryStage.getScene().getRoot();
+        root.setCenter(node);
     }
 
     private Button taoNutMenu(String text) {
@@ -230,6 +233,169 @@ public class TrainManagementDemo extends Application {
         return table;
     }
 
+    private VBox taoNoiDungQuanLyTau() {
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+
+        Label lblTitle = new Label("QUẢN LÝ TÀU");
+        lblTitle.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #0B3D91;");
+
+        Label lblMoTa = new Label("Demo nghiệp vụ: xem danh sách tàu, thêm tàu mới, tìm kiếm và cập nhật trạng thái khai thác.");
+        lblMoTa.setStyle("-fx-font-size: 13px; -fx-text-fill: #555555;");
+
+        TableView<Tau> tableTau = new TableView<>();
+        tableTau.setItems(danhSachTau);
+        tableTau.setPrefHeight(260);
+
+        TableColumn<Tau, String> colMaTau = new TableColumn<>("Mã tàu");
+        colMaTau.setCellValueFactory(new PropertyValueFactory<>("maTau"));
+        colMaTau.setPrefWidth(100);
+
+        TableColumn<Tau, String> colTenTau = new TableColumn<>("Tên tàu");
+        colTenTau.setCellValueFactory(new PropertyValueFactory<>("tenTau"));
+        colTenTau.setPrefWidth(160);
+
+        TableColumn<Tau, String> colLoaiTau = new TableColumn<>("Loại tàu");
+        colLoaiTau.setCellValueFactory(new PropertyValueFactory<>("loaiTau"));
+        colLoaiTau.setPrefWidth(140);
+
+        TableColumn<Tau, String> colSoToa = new TableColumn<>("Số toa");
+        colSoToa.setCellValueFactory(new PropertyValueFactory<>("soToa"));
+        colSoToa.setPrefWidth(90);
+
+        TableColumn<Tau, String> colTrangThai = new TableColumn<>("Trạng thái");
+        colTrangThai.setCellValueFactory(new PropertyValueFactory<>("trangThai"));
+        colTrangThai.setPrefWidth(160);
+
+        tableTau.getColumns().addAll(colMaTau, colTenTau, colLoaiTau, colSoToa, colTrangThai);
+
+        GridPane formPane = new GridPane();
+        formPane.setHgap(10);
+        formPane.setVgap(10);
+        formPane.setPadding(new Insets(15));
+        formPane.setStyle("-fx-background-color: white; -fx-border-color: #D0D7DE;");
+
+        TextField txtMaTau = new TextField();
+        txtMaTau.setPromptText("VD: TAU04");
+
+        TextField txtTenTau = new TextField();
+        txtTenTau.setPromptText("VD: SE4");
+
+        TextField txtLoaiTau = new TextField();
+        txtLoaiTau.setPromptText("VD: Tàu khách");
+
+        TextField txtSoToa = new TextField();
+        txtSoToa.setPromptText("VD: 12");
+
+        ComboBox<String> cbTrangThai = new ComboBox<>(FXCollections.observableArrayList(
+                "Đang hoạt động", "Bảo trì", "Ngừng khai thác"));
+        cbTrangThai.setValue("Đang hoạt động");
+        cbTrangThai.setMaxWidth(Double.MAX_VALUE);
+
+        TextField txtTimKiem = new TextField();
+        txtTimKiem.setPromptText("Tìm theo mã, tên, loại, trạng thái...");
+
+        TextArea txtThongBao = new TextArea();
+        txtThongBao.setEditable(false);
+        txtThongBao.setPrefHeight(90);
+        txtThongBao.setText("Sẵn sàng quản lý danh sách tàu.");
+
+        Button btnThem = new Button("Thêm tàu");
+        btnThem.setStyle("-fx-background-color: #008C45; -fx-text-fill: white; -fx-font-weight: bold;");
+        btnThem.setOnAction(e -> {
+            String maTau = txtMaTau.getText().trim();
+            String tenTau = txtTenTau.getText().trim();
+            String loaiTau = txtLoaiTau.getText().trim();
+            String soToa = txtSoToa.getText().trim();
+            String trangThai = cbTrangThai.getValue();
+
+            if (maTau.isEmpty() || tenTau.isEmpty() || loaiTau.isEmpty() || soToa.isEmpty()) {
+                txtThongBao.setText("Vui lòng nhập đầy đủ mã tàu, tên tàu, loại tàu và số toa.");
+                return;
+            }
+
+            for (Tau tau : danhSachTau) {
+                if (tau.getMaTau().equalsIgnoreCase(maTau)) {
+                    txtThongBao.setText("Mã tàu đã tồn tại. Vui lòng nhập mã khác.");
+                    return;
+                }
+            }
+
+            Tau tauMoi = new Tau(maTau, tenTau, loaiTau, soToa, trangThai);
+            danhSachTau.add(tauMoi);
+            tableTau.setItems(danhSachTau);
+            txtThongBao.setText("Đã thêm tàu mới: " + maTau + " - " + tenTau + ".");
+
+            txtMaTau.clear();
+            txtTenTau.clear();
+            txtLoaiTau.clear();
+            txtSoToa.clear();
+            cbTrangThai.setValue("Đang hoạt động");
+        });
+
+        Button btnCapNhat = new Button("Cập nhật trạng thái");
+        btnCapNhat.setOnAction(e -> {
+            Tau tauDangChon = tableTau.getSelectionModel().getSelectedItem();
+            if (tauDangChon == null) {
+                txtThongBao.setText("Vui lòng chọn một tàu cần cập nhật trạng thái.");
+                return;
+            }
+            tauDangChon.setTrangThai(cbTrangThai.getValue());
+            ObservableList<Tau> hienTai = tableTau.getItems();
+            tableTau.setItems(null);
+            tableTau.setItems(hienTai);
+            txtThongBao.setText("Đã cập nhật trạng thái tàu " + tauDangChon.getMaTau()
+                    + " thành: " + tauDangChon.getTrangThai() + ".");
+        });
+
+        Button btnTimKiem = new Button("Tìm kiếm");
+        btnTimKiem.setOnAction(e -> {
+            String tuKhoa = txtTimKiem.getText().trim().toLowerCase();
+            ObservableList<Tau> ketQua = FXCollections.observableArrayList();
+
+            for (Tau tau : danhSachTau) {
+                boolean phuHop = tuKhoa.isEmpty()
+                        || tau.getMaTau().toLowerCase().contains(tuKhoa)
+                        || tau.getTenTau().toLowerCase().contains(tuKhoa)
+                        || tau.getLoaiTau().toLowerCase().contains(tuKhoa)
+                        || tau.getTrangThai().toLowerCase().contains(tuKhoa);
+                if (phuHop) {
+                    ketQua.add(tau);
+                }
+            }
+
+            tableTau.setItems(ketQua);
+            txtThongBao.setText("Đã tìm thấy " + ketQua.size() + " tàu phù hợp.");
+        });
+
+        Button btnLamMoi = new Button("Làm mới");
+        btnLamMoi.setOnAction(e -> {
+            txtTimKiem.clear();
+            tableTau.setItems(danhSachTau);
+            txtThongBao.setText("Đã hiển thị lại toàn bộ danh sách tàu.");
+        });
+
+        formPane.add(new Label("Mã tàu:"), 0, 0);
+        formPane.add(txtMaTau, 1, 0);
+        formPane.add(new Label("Tên tàu:"), 2, 0);
+        formPane.add(txtTenTau, 3, 0);
+        formPane.add(new Label("Loại tàu:"), 0, 1);
+        formPane.add(txtLoaiTau, 1, 1);
+        formPane.add(new Label("Số toa:"), 2, 1);
+        formPane.add(txtSoToa, 3, 1);
+        formPane.add(new Label("Trạng thái:"), 0, 2);
+        formPane.add(cbTrangThai, 1, 2);
+        formPane.add(btnThem, 2, 2);
+        formPane.add(btnCapNhat, 3, 2);
+        formPane.add(new Label("Tìm kiếm:"), 0, 3);
+        formPane.add(txtTimKiem, 1, 3, 2, 1);
+        formPane.add(btnTimKiem, 3, 3);
+        formPane.add(btnLamMoi, 4, 3);
+
+        content.getChildren().addAll(lblTitle, lblMoTa, tableTau, formPane, txtThongBao);
+        return content;
+    }
+
     private void taoDuLieuMau() {
         danhSachVe.add(new VeTau("VE001", "Hà Nội", "Đà Nẵng", "07:00", 500000, "Còn trống"));
         danhSachVe.add(new VeTau("VE002", "Hà Nội", "Lào Cai", "08:30", 250000, "Còn trống"));
@@ -237,6 +403,10 @@ public class TrainManagementDemo extends Application {
         danhSachVe.add(new VeTau("VE004", "Hà Nội", "Huế", "10:15", 420000, "Còn trống"));
         danhSachVe.add(new VeTau("VE005", "Lào Cai", "Hà Nội", "14:00", 260000, "Còn trống"));
         danhSachVe.add(new VeTau("VE006", "Hà Nội", "Vinh", "16:30", 320000, "Còn trống"));
+
+        danhSachTau.add(new Tau("TAU01", "SE1", "Tàu khách Bắc - Nam", "12", "Đang hoạt động"));
+        danhSachTau.add(new Tau("TAU02", "SE3", "Tàu khách nhanh", "10", "Đang hoạt động"));
+        danhSachTau.add(new Tau("TAU03", "LC5", "Tàu tuyến Hà Nội - Lào Cai", "8", "Bảo trì"));
     }
 
     private void timVe() {
@@ -351,6 +521,46 @@ public class TrainManagementDemo extends Application {
 
         public double getGia() {
             return gia.get();
+        }
+
+        public String getTrangThai() {
+            return trangThai.get();
+        }
+
+        public void setTrangThai(String trangThai) {
+            this.trangThai.set(trangThai);
+        }
+    }
+
+    public static class Tau {
+        private final SimpleStringProperty maTau;
+        private final SimpleStringProperty tenTau;
+        private final SimpleStringProperty loaiTau;
+        private final SimpleStringProperty soToa;
+        private final SimpleStringProperty trangThai;
+
+        public Tau(String maTau, String tenTau, String loaiTau, String soToa, String trangThai) {
+            this.maTau = new SimpleStringProperty(maTau);
+            this.tenTau = new SimpleStringProperty(tenTau);
+            this.loaiTau = new SimpleStringProperty(loaiTau);
+            this.soToa = new SimpleStringProperty(soToa);
+            this.trangThai = new SimpleStringProperty(trangThai);
+        }
+
+        public String getMaTau() {
+            return maTau.get();
+        }
+
+        public String getTenTau() {
+            return tenTau.get();
+        }
+
+        public String getLoaiTau() {
+            return loaiTau.get();
+        }
+
+        public String getSoToa() {
+            return soToa.get();
         }
 
         public String getTrangThai() {
