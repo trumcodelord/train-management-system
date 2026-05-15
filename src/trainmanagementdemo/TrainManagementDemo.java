@@ -28,6 +28,7 @@ public class TrainManagementDemo extends Application {
 
     private ObservableList<VeTau> danhSachVe = FXCollections.observableArrayList();
     private ObservableList<Tau> danhSachTau = FXCollections.observableArrayList();
+    private ObservableList<LichTrinh> danhSachLichTrinh = FXCollections.observableArrayList();
 
     @Override
     public void start(Stage stage) {
@@ -107,7 +108,7 @@ public class TrainManagementDemo extends Application {
 
         btnBanVe.setOnAction(e -> doiNoiDung(taoNoiDungBanVe()));
         btnTau.setOnAction(e -> doiNoiDung(taoNoiDungQuanLyTau()));
-        btnLichTrinh.setOnAction(e -> thongBaoChucNangDangMoPhong("Quản lý lịch trình"));
+        btnLichTrinh.setOnAction(e -> doiNoiDung(taoNoiDungQuanLyLichTrinh()));
         btnNhanVien.setOnAction(e -> thongBaoChucNangDangMoPhong("Quản lý nhân viên"));
         btnThuChi.setOnAction(e -> thongBaoChucNangDangMoPhong("Thống kê thu chi"));
 
@@ -396,6 +397,206 @@ public class TrainManagementDemo extends Application {
         return content;
     }
 
+    private VBox taoNoiDungQuanLyLichTrinh() {
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+
+        Label lblTitle = new Label("QUẢN LÝ LỊCH TRÌNH");
+        lblTitle.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #0B3D91;");
+
+        Label lblMoTa = new Label("Demo nghiệp vụ: tra cứu lịch trình, thêm lịch trình mới và cập nhật trạng thái chạy tàu.");
+        lblMoTa.setStyle("-fx-font-size: 13px; -fx-text-fill: #555555;");
+
+        TableView<LichTrinh> tableLichTrinh = new TableView<>();
+        tableLichTrinh.setItems(danhSachLichTrinh);
+        tableLichTrinh.setPrefHeight(260);
+
+        TableColumn<LichTrinh, String> colMaLT = new TableColumn<>("Mã lịch trình");
+        colMaLT.setCellValueFactory(new PropertyValueFactory<>("maLichTrinh"));
+        colMaLT.setPrefWidth(120);
+
+        TableColumn<LichTrinh, String> colMaTau = new TableColumn<>("Mã tàu");
+        colMaTau.setCellValueFactory(new PropertyValueFactory<>("maTau"));
+        colMaTau.setPrefWidth(90);
+
+        TableColumn<LichTrinh, String> colGaDi = new TableColumn<>("Ga đi");
+        colGaDi.setCellValueFactory(new PropertyValueFactory<>("gaDi"));
+        colGaDi.setPrefWidth(120);
+
+        TableColumn<LichTrinh, String> colGaDen = new TableColumn<>("Ga đến");
+        colGaDen.setCellValueFactory(new PropertyValueFactory<>("gaDen"));
+        colGaDen.setPrefWidth(120);
+
+        TableColumn<LichTrinh, String> colGioDi = new TableColumn<>("Giờ đi");
+        colGioDi.setCellValueFactory(new PropertyValueFactory<>("gioDi"));
+        colGioDi.setPrefWidth(90);
+
+        TableColumn<LichTrinh, String> colGioDen = new TableColumn<>("Giờ đến");
+        colGioDen.setCellValueFactory(new PropertyValueFactory<>("gioDen"));
+        colGioDen.setPrefWidth(90);
+
+        TableColumn<LichTrinh, String> colTrangThai = new TableColumn<>("Trạng thái");
+        colTrangThai.setCellValueFactory(new PropertyValueFactory<>("trangThai"));
+        colTrangThai.setPrefWidth(140);
+
+        tableLichTrinh.getColumns().addAll(colMaLT, colMaTau, colGaDi, colGaDen, colGioDi, colGioDen, colTrangThai);
+
+        GridPane formPane = new GridPane();
+        formPane.setHgap(10);
+        formPane.setVgap(10);
+        formPane.setPadding(new Insets(15));
+        formPane.setStyle("-fx-background-color: white; -fx-border-color: #D0D7DE;");
+
+        TextField txtMaLT = new TextField();
+        txtMaLT.setPromptText("VD: LT004");
+
+        ComboBox<String> cbMaTau = new ComboBox<>();
+        for (Tau tau : danhSachTau) {
+            cbMaTau.getItems().add(tau.getMaTau());
+        }
+        if (!cbMaTau.getItems().isEmpty()) {
+            cbMaTau.setValue(cbMaTau.getItems().get(0));
+        }
+        cbMaTau.setMaxWidth(Double.MAX_VALUE);
+
+        TextField txtGaDiForm = new TextField();
+        txtGaDiForm.setPromptText("VD: Hà Nội");
+
+        TextField txtGaDenForm = new TextField();
+        txtGaDenForm.setPromptText("VD: Đà Nẵng");
+
+        TextField txtGioDi = new TextField();
+        txtGioDi.setPromptText("VD: 07:00");
+
+        TextField txtGioDen = new TextField();
+        txtGioDen.setPromptText("VD: 17:30");
+
+        ComboBox<String> cbTrangThai = new ComboBox<>(FXCollections.observableArrayList(
+                "Đang mở bán", "Đã khóa", "Tạm hoãn", "Hoàn thành"));
+        cbTrangThai.setValue("Đang mở bán");
+        cbTrangThai.setMaxWidth(Double.MAX_VALUE);
+
+        TextField txtTimKiem = new TextField();
+        txtTimKiem.setPromptText("Tìm theo ga, mã tàu, trạng thái...");
+
+        TextArea txtThongBao = new TextArea();
+        txtThongBao.setEditable(false);
+        txtThongBao.setPrefHeight(90);
+        txtThongBao.setText("Sẵn sàng quản lý lịch trình tàu chạy.");
+
+        Button btnThem = new Button("Thêm lịch trình");
+        btnThem.setStyle("-fx-background-color: #008C45; -fx-text-fill: white; -fx-font-weight: bold;");
+        btnThem.setOnAction(e -> {
+            String maLT = txtMaLT.getText().trim();
+            String maTau = cbMaTau.getValue();
+            String gaDi = txtGaDiForm.getText().trim();
+            String gaDen = txtGaDenForm.getText().trim();
+            String gioDi = txtGioDi.getText().trim();
+            String gioDen = txtGioDen.getText().trim();
+            String trangThai = cbTrangThai.getValue();
+
+            if (maLT.isEmpty() || maTau == null || gaDi.isEmpty() || gaDen.isEmpty() || gioDi.isEmpty() || gioDen.isEmpty()) {
+                txtThongBao.setText("Vui lòng nhập đầy đủ mã lịch trình, mã tàu, ga đi, ga đến, giờ đi và giờ đến.");
+                return;
+            }
+
+            if (gaDi.equalsIgnoreCase(gaDen)) {
+                txtThongBao.setText("Ga đi và ga đến không được trùng nhau.");
+                return;
+            }
+
+            for (LichTrinh lt : danhSachLichTrinh) {
+                if (lt.getMaLichTrinh().equalsIgnoreCase(maLT)) {
+                    txtThongBao.setText("Mã lịch trình đã tồn tại. Vui lòng nhập mã khác.");
+                    return;
+                }
+                if (lt.getMaTau().equalsIgnoreCase(maTau) && lt.getGioDi().equalsIgnoreCase(gioDi)) {
+                    txtThongBao.setText("Tàu " + maTau + " đã có lịch trình khác tại giờ " + gioDi + ".");
+                    return;
+                }
+            }
+
+            LichTrinh lichTrinhMoi = new LichTrinh(maLT, maTau, gaDi, gaDen, gioDi, gioDen, trangThai);
+            danhSachLichTrinh.add(lichTrinhMoi);
+            tableLichTrinh.setItems(danhSachLichTrinh);
+            txtThongBao.setText("Đã thêm lịch trình mới: " + maLT + " cho tàu " + maTau + ".");
+
+            txtMaLT.clear();
+            txtGaDiForm.clear();
+            txtGaDenForm.clear();
+            txtGioDi.clear();
+            txtGioDen.clear();
+            cbTrangThai.setValue("Đang mở bán");
+        });
+
+        Button btnCapNhat = new Button("Cập nhật trạng thái");
+        btnCapNhat.setOnAction(e -> {
+            LichTrinh ltDangChon = tableLichTrinh.getSelectionModel().getSelectedItem();
+            if (ltDangChon == null) {
+                txtThongBao.setText("Vui lòng chọn một lịch trình cần cập nhật trạng thái.");
+                return;
+            }
+            ltDangChon.setTrangThai(cbTrangThai.getValue());
+            ObservableList<LichTrinh> hienTai = tableLichTrinh.getItems();
+            tableLichTrinh.setItems(null);
+            tableLichTrinh.setItems(hienTai);
+            txtThongBao.setText("Đã cập nhật trạng thái lịch trình " + ltDangChon.getMaLichTrinh()
+                    + " thành: " + ltDangChon.getTrangThai() + ".");
+        });
+
+        Button btnTimKiem = new Button("Tìm kiếm");
+        btnTimKiem.setOnAction(e -> {
+            String tuKhoa = txtTimKiem.getText().trim().toLowerCase();
+            ObservableList<LichTrinh> ketQua = FXCollections.observableArrayList();
+
+            for (LichTrinh lt : danhSachLichTrinh) {
+                boolean phuHop = tuKhoa.isEmpty()
+                        || lt.getMaLichTrinh().toLowerCase().contains(tuKhoa)
+                        || lt.getMaTau().toLowerCase().contains(tuKhoa)
+                        || lt.getGaDi().toLowerCase().contains(tuKhoa)
+                        || lt.getGaDen().toLowerCase().contains(tuKhoa)
+                        || lt.getTrangThai().toLowerCase().contains(tuKhoa);
+                if (phuHop) {
+                    ketQua.add(lt);
+                }
+            }
+
+            tableLichTrinh.setItems(ketQua);
+            txtThongBao.setText("Đã tìm thấy " + ketQua.size() + " lịch trình phù hợp.");
+        });
+
+        Button btnLamMoi = new Button("Làm mới");
+        btnLamMoi.setOnAction(e -> {
+            txtTimKiem.clear();
+            tableLichTrinh.setItems(danhSachLichTrinh);
+            txtThongBao.setText("Đã hiển thị lại toàn bộ danh sách lịch trình.");
+        });
+
+        formPane.add(new Label("Mã lịch trình:"), 0, 0);
+        formPane.add(txtMaLT, 1, 0);
+        formPane.add(new Label("Mã tàu:"), 2, 0);
+        formPane.add(cbMaTau, 3, 0);
+        formPane.add(new Label("Ga đi:"), 0, 1);
+        formPane.add(txtGaDiForm, 1, 1);
+        formPane.add(new Label("Ga đến:"), 2, 1);
+        formPane.add(txtGaDenForm, 3, 1);
+        formPane.add(new Label("Giờ đi:"), 0, 2);
+        formPane.add(txtGioDi, 1, 2);
+        formPane.add(new Label("Giờ đến:"), 2, 2);
+        formPane.add(txtGioDen, 3, 2);
+        formPane.add(new Label("Trạng thái:"), 0, 3);
+        formPane.add(cbTrangThai, 1, 3);
+        formPane.add(btnThem, 2, 3);
+        formPane.add(btnCapNhat, 3, 3);
+        formPane.add(new Label("Tìm kiếm:"), 0, 4);
+        formPane.add(txtTimKiem, 1, 4, 2, 1);
+        formPane.add(btnTimKiem, 3, 4);
+        formPane.add(btnLamMoi, 4, 4);
+
+        content.getChildren().addAll(lblTitle, lblMoTa, tableLichTrinh, formPane, txtThongBao);
+        return content;
+    }
+
     private void taoDuLieuMau() {
         danhSachVe.add(new VeTau("VE001", "Hà Nội", "Đà Nẵng", "07:00", 500000, "Còn trống"));
         danhSachVe.add(new VeTau("VE002", "Hà Nội", "Lào Cai", "08:30", 250000, "Còn trống"));
@@ -407,6 +608,10 @@ public class TrainManagementDemo extends Application {
         danhSachTau.add(new Tau("TAU01", "SE1", "Tàu khách Bắc - Nam", "12", "Đang hoạt động"));
         danhSachTau.add(new Tau("TAU02", "SE3", "Tàu khách nhanh", "10", "Đang hoạt động"));
         danhSachTau.add(new Tau("TAU03", "LC5", "Tàu tuyến Hà Nội - Lào Cai", "8", "Bảo trì"));
+
+        danhSachLichTrinh.add(new LichTrinh("LT001", "TAU01", "Hà Nội", "Đà Nẵng", "07:00", "17:30", "Đang mở bán"));
+        danhSachLichTrinh.add(new LichTrinh("LT002", "TAU02", "Hà Nội", "Lào Cai", "08:30", "14:00", "Đang mở bán"));
+        danhSachLichTrinh.add(new LichTrinh("LT003", "TAU03", "Đà Nẵng", "TP.HCM", "09:00", "23:00", "Tạm hoãn"));
     }
 
     private void timVe() {
@@ -561,6 +766,59 @@ public class TrainManagementDemo extends Application {
 
         public String getSoToa() {
             return soToa.get();
+        }
+
+        public String getTrangThai() {
+            return trangThai.get();
+        }
+
+        public void setTrangThai(String trangThai) {
+            this.trangThai.set(trangThai);
+        }
+    }
+
+    public static class LichTrinh {
+        private final SimpleStringProperty maLichTrinh;
+        private final SimpleStringProperty maTau;
+        private final SimpleStringProperty gaDi;
+        private final SimpleStringProperty gaDen;
+        private final SimpleStringProperty gioDi;
+        private final SimpleStringProperty gioDen;
+        private final SimpleStringProperty trangThai;
+
+        public LichTrinh(String maLichTrinh, String maTau, String gaDi, String gaDen,
+                String gioDi, String gioDen, String trangThai) {
+            this.maLichTrinh = new SimpleStringProperty(maLichTrinh);
+            this.maTau = new SimpleStringProperty(maTau);
+            this.gaDi = new SimpleStringProperty(gaDi);
+            this.gaDen = new SimpleStringProperty(gaDen);
+            this.gioDi = new SimpleStringProperty(gioDi);
+            this.gioDen = new SimpleStringProperty(gioDen);
+            this.trangThai = new SimpleStringProperty(trangThai);
+        }
+
+        public String getMaLichTrinh() {
+            return maLichTrinh.get();
+        }
+
+        public String getMaTau() {
+            return maTau.get();
+        }
+
+        public String getGaDi() {
+            return gaDi.get();
+        }
+
+        public String getGaDen() {
+            return gaDen.get();
+        }
+
+        public String getGioDi() {
+            return gioDi.get();
+        }
+
+        public String getGioDen() {
+            return gioDen.get();
         }
 
         public String getTrangThai() {
