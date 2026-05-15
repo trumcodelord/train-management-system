@@ -30,6 +30,7 @@ public class TrainManagementDemo extends Application {
     private final ObservableList<Tau> danhSachTau = FXCollections.observableArrayList();
     private final ObservableList<LichTrinh> danhSachLichTrinh = FXCollections.observableArrayList();
     private final ObservableList<NhanVien> danhSachNhanVien = FXCollections.observableArrayList();
+    private final ObservableList<PhieuThuChi> danhSachThuChi = FXCollections.observableArrayList();
 
     @Override
     public void start(Stage stage) {
@@ -104,7 +105,7 @@ public class TrainManagementDemo extends Application {
         btnTau.setOnAction(e -> doiNoiDung(taoNoiDungQuanLyTau()));
         btnLichTrinh.setOnAction(e -> doiNoiDung(taoNoiDungQuanLyLichTrinh()));
         btnNhanVien.setOnAction(e -> doiNoiDung(taoNoiDungQuanLyNhanVien()));
-        btnThuChi.setOnAction(e -> thongBaoChucNangDangMoPhong("Thống kê thu chi"));
+        btnThuChi.setOnAction(e -> doiNoiDung(taoNoiDungThongKeThuChi()));
 
         menu.getChildren().addAll(lblMenu, btnBanVe, btnTau, btnLichTrinh, btnNhanVien, btnThuChi);
         return menu;
@@ -625,9 +626,196 @@ public class TrainManagementDemo extends Application {
         return content;
     }
 
+    private VBox taoNoiDungThongKeThuChi() {
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+
+        Label lblMoTa = new Label("Demo nghiệp vụ: ghi nhận phiếu thu/chi, tra cứu giao dịch và tổng hợp báo cáo tài chính nhanh.");
+        lblMoTa.setStyle("-fx-font-size: 13px; -fx-text-fill: #555555;");
+
+        TableView<PhieuThuChi> tableThuChi = new TableView<>();
+        tableThuChi.setItems(danhSachThuChi);
+        tableThuChi.setPrefHeight(240);
+        tableThuChi.getColumns().addAll(
+                taoCot("Mã phiếu", "maPhieu", 95),
+                taoCot("Loại", "loai", 70),
+                taoCot("Hạng mục", "hangMuc", 120),
+                taoCot("Số tiền", "soTien", 110),
+                taoCot("Ngày lập", "ngayLap", 100),
+                taoCot("Người lập", "nguoiLap", 100),
+                taoCot("Ghi chú", "ghiChu", 190));
+
+        GridPane formPane = taoKhungNhap();
+        TextField txtMaPhieu = new TextField();
+        txtMaPhieu.setPromptText("VD: TC004");
+        ComboBox<String> cbLoai = new ComboBox<>(FXCollections.observableArrayList("Thu", "Chi"));
+        cbLoai.setValue("Thu");
+        cbLoai.setMaxWidth(Double.MAX_VALUE);
+        ComboBox<String> cbHangMuc = new ComboBox<>(FXCollections.observableArrayList("Bán vé", "Lương", "Bảo trì", "Vật tư", "Dịch vụ", "Khác"));
+        cbHangMuc.setValue("Bán vé");
+        cbHangMuc.setMaxWidth(Double.MAX_VALUE);
+        TextField txtSoTien = new TextField();
+        txtSoTien.setPromptText("VD: 500000");
+        TextField txtNgayLap = new TextField();
+        txtNgayLap.setPromptText("VD: 15/05/2025");
+        TextField txtNguoiLap = new TextField();
+        txtNguoiLap.setPromptText("VD: NV003");
+        TextField txtGhiChu = new TextField();
+        txtGhiChu.setPromptText("Nội dung thu/chi");
+        TextField txtTimKiem = new TextField();
+        txtTimKiem.setPromptText("Tìm theo mã, loại, hạng mục, người lập...");
+        TextArea txtThongBao = taoVungThongBao("Sẵn sàng thống kê thu chi.");
+
+        DecimalFormat df = new DecimalFormat("#,###");
+        Label lblTongThu = new Label();
+        Label lblTongChi = new Label();
+        Label lblLoiNhuan = new Label();
+        capNhatTongThuChi(danhSachThuChi, lblTongThu, lblTongChi, lblLoiNhuan, df);
+
+        HBox summaryBox = new HBox(25);
+        summaryBox.setPadding(new Insets(12));
+        summaryBox.setStyle("-fx-background-color: white; -fx-border-color: #D0D7DE;");
+        summaryBox.getChildren().addAll(lblTongThu, lblTongChi, lblLoiNhuan);
+
+        Button btnThem = new Button("Thêm phiếu");
+        btnThem.setStyle("-fx-background-color: #008C45; -fx-text-fill: white; -fx-font-weight: bold;");
+        btnThem.setOnAction(e -> {
+            String maPhieu = txtMaPhieu.getText().trim();
+            String loai = cbLoai.getValue();
+            String hangMuc = cbHangMuc.getValue();
+            String soTienText = txtSoTien.getText().trim();
+            String ngayLap = txtNgayLap.getText().trim();
+            String nguoiLap = txtNguoiLap.getText().trim();
+            String ghiChu = txtGhiChu.getText().trim();
+
+            if (maPhieu.isEmpty() || soTienText.isEmpty() || ngayLap.isEmpty() || nguoiLap.isEmpty()) {
+                txtThongBao.setText("Vui lòng nhập đầy đủ mã phiếu, số tiền, ngày lập và người lập.");
+                return;
+            }
+            double soTien;
+            try {
+                soTien = Double.parseDouble(soTienText);
+            } catch (NumberFormatException ex) {
+                txtThongBao.setText("Số tiền phải là số hợp lệ.");
+                return;
+            }
+            if (soTien <= 0) {
+                txtThongBao.setText("Số tiền phải lớn hơn 0.");
+                return;
+            }
+            for (PhieuThuChi phieu : danhSachThuChi) {
+                if (phieu.getMaPhieu().equalsIgnoreCase(maPhieu)) {
+                    txtThongBao.setText("Mã phiếu đã tồn tại. Vui lòng nhập mã khác.");
+                    return;
+                }
+            }
+            danhSachThuChi.add(new PhieuThuChi(maPhieu, loai, hangMuc, soTien, ngayLap, nguoiLap, ghiChu));
+            tableThuChi.setItems(danhSachThuChi);
+            capNhatTongThuChi(danhSachThuChi, lblTongThu, lblTongChi, lblLoiNhuan, df);
+            txtThongBao.setText("Đã thêm phiếu " + loai.toLowerCase() + ": " + maPhieu + " - " + df.format(soTien) + " VNĐ.");
+            txtMaPhieu.clear();
+            txtSoTien.clear();
+            txtNgayLap.clear();
+            txtNguoiLap.clear();
+            txtGhiChu.clear();
+            cbLoai.setValue("Thu");
+            cbHangMuc.setValue("Bán vé");
+        });
+
+        Button btnTimKiem = new Button("Tìm kiếm");
+        btnTimKiem.setOnAction(e -> {
+            String tuKhoa = txtTimKiem.getText().trim().toLowerCase();
+            ObservableList<PhieuThuChi> ketQua = FXCollections.observableArrayList();
+            for (PhieuThuChi phieu : danhSachThuChi) {
+                if (tuKhoa.isEmpty()
+                        || phieu.getMaPhieu().toLowerCase().contains(tuKhoa)
+                        || phieu.getLoai().toLowerCase().contains(tuKhoa)
+                        || phieu.getHangMuc().toLowerCase().contains(tuKhoa)
+                        || phieu.getNguoiLap().toLowerCase().contains(tuKhoa)
+                        || phieu.getGhiChu().toLowerCase().contains(tuKhoa)) {
+                    ketQua.add(phieu);
+                }
+            }
+            tableThuChi.setItems(ketQua);
+            capNhatTongThuChi(ketQua, lblTongThu, lblTongChi, lblLoiNhuan, df);
+            txtThongBao.setText("Đã tìm thấy " + ketQua.size() + " phiếu thu chi phù hợp.");
+        });
+
+        Button btnLamMoi = new Button("Làm mới");
+        btnLamMoi.setOnAction(e -> {
+            txtTimKiem.clear();
+            tableThuChi.setItems(danhSachThuChi);
+            capNhatTongThuChi(danhSachThuChi, lblTongThu, lblTongChi, lblLoiNhuan, df);
+            txtThongBao.setText("Đã hiển thị lại toàn bộ phiếu thu chi.");
+        });
+
+        Button btnXuatBaoCao = new Button("Xuất báo cáo text");
+        btnXuatBaoCao.setOnAction(e -> {
+            double tongThu = tinhTongTheoLoai(tableThuChi.getItems(), "Thu");
+            double tongChi = tinhTongTheoLoai(tableThuChi.getItems(), "Chi");
+            txtThongBao.setText("BÁO CÁO THU CHI NHANH\n"
+                    + "----------------------------------\n"
+                    + "Số phiếu đang hiển thị: " + tableThuChi.getItems().size() + "\n"
+                    + "Tổng thu: " + df.format(tongThu) + " VNĐ\n"
+                    + "Tổng chi: " + df.format(tongChi) + " VNĐ\n"
+                    + "Lợi nhuận: " + df.format(tongThu - tongChi) + " VNĐ\n"
+                    + "----------------------------------\n"
+                    + "Demo mô phỏng chức năng xuất báo cáo tài chính.");
+        });
+
+        formPane.add(new Label("Mã phiếu:"), 0, 0);
+        formPane.add(txtMaPhieu, 1, 0);
+        formPane.add(new Label("Loại:"), 2, 0);
+        formPane.add(cbLoai, 3, 0);
+        formPane.add(new Label("Hạng mục:"), 0, 1);
+        formPane.add(cbHangMuc, 1, 1);
+        formPane.add(new Label("Số tiền:"), 2, 1);
+        formPane.add(txtSoTien, 3, 1);
+        formPane.add(new Label("Ngày lập:"), 0, 2);
+        formPane.add(txtNgayLap, 1, 2);
+        formPane.add(new Label("Người lập:"), 2, 2);
+        formPane.add(txtNguoiLap, 3, 2);
+        formPane.add(new Label("Ghi chú:"), 0, 3);
+        formPane.add(txtGhiChu, 1, 3, 2, 1);
+        formPane.add(btnThem, 3, 3);
+        formPane.add(new Label("Tìm kiếm:"), 0, 4);
+        formPane.add(txtTimKiem, 1, 4, 2, 1);
+        formPane.add(btnTimKiem, 3, 4);
+        formPane.add(btnLamMoi, 4, 4);
+        formPane.add(btnXuatBaoCao, 5, 4);
+
+        content.getChildren().addAll(taoTieuDe("THỐNG KÊ THU CHI"), lblMoTa, summaryBox, tableThuChi, formPane, txtThongBao);
+        return content;
+    }
+
     private <T> void lamMoiBang(TableView<T> table, ObservableList<T> items) {
         table.setItems(null);
         table.setItems(items);
+    }
+
+    private void capNhatTongThuChi(ObservableList<PhieuThuChi> ds, Label lblTongThu, Label lblTongChi, Label lblLoiNhuan, DecimalFormat df) {
+        double tongThu = tinhTongTheoLoai(ds, "Thu");
+        double tongChi = tinhTongTheoLoai(ds, "Chi");
+        lblTongThu.setText("Tổng thu: " + df.format(tongThu) + " VNĐ");
+        lblTongChi.setText("Tổng chi: " + df.format(tongChi) + " VNĐ");
+        lblLoiNhuan.setText("Lợi nhuận: " + df.format(tongThu - tongChi) + " VNĐ");
+        lblTongThu.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #008C45;");
+        lblTongChi.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #B00020;");
+        lblLoiNhuan.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #0B3D91;");
+    }
+
+    private double tinhTongTheoLoai(ObservableList<PhieuThuChi> ds, String loai) {
+        double tong = 0;
+        for (PhieuThuChi phieu : ds) {
+            if (loai.equalsIgnoreCase(phieu.getLoai())) {
+                tong += phieu.getSoTien();
+            }
+        }
+        return tong;
+    }
+
+    private String taoMaPhieuTuDong() {
+        return String.format("TC%03d", danhSachThuChi.size() + 1);
     }
 
     private void taoDuLieuMau() {
@@ -649,6 +837,10 @@ public class TrainManagementDemo extends Application {
         danhSachNhanVien.add(new NhanVien("NV001", "Nguyễn Việt Long", "001203000001", "0901000001", "Bán vé", "Sáng", "Đang làm"));
         danhSachNhanVien.add(new NhanVien("NV002", "Trần Nam Phong", "001203000002", "0901000002", "Điều hành", "Hành chính", "Đang làm"));
         danhSachNhanVien.add(new NhanVien("NV003", "Nguyễn Tấn Dũng", "001203000003", "0901000003", "Kế toán", "Chiều", "Tạm nghỉ"));
+
+        danhSachThuChi.add(new PhieuThuChi("TC001", "Thu", "Bán vé", 650000, "15/05/2025", "NV001", "Doanh thu vé VE003"));
+        danhSachThuChi.add(new PhieuThuChi("TC002", "Chi", "Lương", 1200000, "15/05/2025", "NV003", "Chi trả lương ca trực"));
+        danhSachThuChi.add(new PhieuThuChi("TC003", "Chi", "Bảo trì", 350000, "15/05/2025", "NV003", "Bảo trì thiết bị toa tàu"));
     }
 
     private void timVe() {
@@ -685,10 +877,16 @@ public class TrainManagementDemo extends Application {
         veDangChon.setTrangThai("Đã đặt");
         lamMoiBang(tableVe, tableVe.getItems());
         DecimalFormat df = new DecimalFormat("#,###");
+
+        String maPhieu = taoMaPhieuTuDong();
+        danhSachThuChi.add(new PhieuThuChi(maPhieu, "Thu", "Bán vé", veDangChon.getGia(), "15/05/2025", "NV001",
+                "Thu tiền vé " + veDangChon.getMaVe() + " - " + tenKhach));
+
         String hoaDon =
                 "ĐẶT VÉ THÀNH CÔNG\n"
                 + "----------------------------------\n"
                 + "Mã vé: " + veDangChon.getMaVe() + "\n"
+                + "Mã phiếu thu: " + maPhieu + "\n"
                 + "Khách hàng: " + tenKhach + "\n"
                 + "CCCD/SĐT: " + cccd + "\n"
                 + "Ga đi: " + veDangChon.getGaDi() + "\n"
@@ -697,16 +895,8 @@ public class TrainManagementDemo extends Application {
                 + "Giá vé: " + df.format(veDangChon.getGia()) + " VNĐ\n"
                 + "Trạng thái vé: " + veDangChon.getTrangThai() + "\n"
                 + "----------------------------------\n"
-                + "Hệ thống đã lưu thông tin đặt vé và tạo hóa đơn.";
+                + "Hệ thống đã lưu thông tin đặt vé, tạo hóa đơn và tự động ghi nhận doanh thu vào thống kê thu chi.";
         txtHoaDon.setText(hoaDon);
-    }
-
-    private void thongBaoChucNangDangMoPhong(String tenChucNang) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Thông báo");
-        alert.setHeaderText(tenChucNang);
-        alert.setContentText("Chức năng này đang được mô phỏng trong phạm vi demo. Nhóm tập trung demo các luồng chính trước, dữ liệu dùng trong bộ nhớ.");
-        alert.showAndWait();
     }
 
     public static void main(String[] args) {
@@ -815,5 +1005,32 @@ public class TrainManagementDemo extends Application {
         public String getCaLam() { return caLam.get(); }
         public String getTrangThai() { return trangThai.get(); }
         public void setTrangThai(String trangThai) { this.trangThai.set(trangThai); }
+    }
+
+    public static class PhieuThuChi {
+        private final SimpleStringProperty maPhieu;
+        private final SimpleStringProperty loai;
+        private final SimpleStringProperty hangMuc;
+        private final SimpleDoubleProperty soTien;
+        private final SimpleStringProperty ngayLap;
+        private final SimpleStringProperty nguoiLap;
+        private final SimpleStringProperty ghiChu;
+
+        public PhieuThuChi(String maPhieu, String loai, String hangMuc, double soTien, String ngayLap, String nguoiLap, String ghiChu) {
+            this.maPhieu = new SimpleStringProperty(maPhieu);
+            this.loai = new SimpleStringProperty(loai);
+            this.hangMuc = new SimpleStringProperty(hangMuc);
+            this.soTien = new SimpleDoubleProperty(soTien);
+            this.ngayLap = new SimpleStringProperty(ngayLap);
+            this.nguoiLap = new SimpleStringProperty(nguoiLap);
+            this.ghiChu = new SimpleStringProperty(ghiChu);
+        }
+        public String getMaPhieu() { return maPhieu.get(); }
+        public String getLoai() { return loai.get(); }
+        public String getHangMuc() { return hangMuc.get(); }
+        public double getSoTien() { return soTien.get(); }
+        public String getNgayLap() { return ngayLap.get(); }
+        public String getNguoiLap() { return nguoiLap.get(); }
+        public String getGhiChu() { return ghiChu.get(); }
     }
 }
